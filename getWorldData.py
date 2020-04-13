@@ -1,0 +1,74 @@
+import csv
+
+import requests
+import json
+import pandas
+import csv
+import requests
+from datetime import datetime, timedelta
+
+
+world_data_json_url = "https://pomber.github.io/covid19/timeseries.json"
+
+def collect_world_covid_19_data(total_world_data):
+    request_data = requests.get(world_data_json_url)
+    world_countries_data = request_data.json()
+    last_hour_date_time = (datetime.now() - timedelta(hours=6)).strftime('%d/%m/%Y %H:%M:%S')
+
+
+
+    for index,country in enumerate(world_countries_data):
+        if country != "India":
+            recent_data = len(world_countries_data[country])-1
+            previous_day_data = len(world_countries_data[country])-2
+            today_confirmed_cases = world_countries_data[country][recent_data]["confirmed"] - world_countries_data[country][previous_day_data]["confirmed"]
+            today_recovered = world_countries_data[country][recent_data]["recovered"] - world_countries_data[country][previous_day_data]["recovered"]
+            today_deaths = world_countries_data[country][recent_data]["deaths"] - world_countries_data[country][previous_day_data]["deaths"]
+
+            active_cases = world_countries_data[country][recent_data]["confirmed"] - world_countries_data[country][recent_data]["deaths"] - world_countries_data[country][recent_data]["recovered"]
+            total_world_data.append(dict(id=index+2,name=country,Confirmed=world_countries_data[country][recent_data]["confirmed"],
+                                   Recovered=world_countries_data[country][recent_data]["recovered"],Active=active_cases,
+                                   Deaths=world_countries_data[country][recent_data]["deaths"],todaytotalconfirmed=today_confirmed_cases,
+                                   todaytotaldeaths=today_deaths,todaytotalrecovered=today_recovered,
+                                   lastupdatedtime=last_hour_date_time,states=[]))
+
+
+
+    return total_world_data
+
+
+
+def india_district_data(state_based_data,dist_total_data):
+
+    for state in state_based_data:
+        dist_list = []
+        if state["name"] in dist_total_data.keys():
+            for data in dist_total_data[state["name"]]["districtData"]:
+                dist_list.append(dict(name=data,confirmed=dist_total_data[state["name"]]["districtData"][data]["confirmed"],
+                                      todayconfirmed=dist_total_data[state["name"]]["districtData"][data]["delta"]["confirmed"]))
+
+
+        state["dists"] = dist_list
+
+    return state_based_data
+
+
+
+
+
+# tracker_data = requests.get('https://api.covid19india.org/data.json')
+# dist_total_data = requests.get("https://api.covid19india.org/state_district_wise.json").json()
+# formatted_tracker_data = tracker_data.json()
+# dict_with_date = {}
+# statewise_total_data = []
+# for index, data in enumerate(formatted_tracker_data["statewise"]):
+#     if index != 0:
+#         statewise_total_data.append(dict(name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
+#                  Recovered=data["recovered"], Deaths=data["deaths"], todayconfirmed=data["deltaconfirmed"],
+#                  todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"], statecode=data["statecode"]))
+#
+# india_district_data(statewise_total_data, dist_total_data)
+#
+# print(dict_with_date)
+
+# collect_world_covid_19_data()

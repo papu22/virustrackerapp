@@ -6,37 +6,63 @@ from flask_cors import CORS, cross_origin
 from map import map_data
 from flask import Response
 from fetchdatebased import divide_data_into_weeks
+from getWorldData import collect_world_covid_19_data
+from getWorldData import india_district_data
+import logging
+import requests_cache
+import time
+
+
 
 app = Flask(__name__)
+
+
+#requests_cache.install_cache('covid_cache', backend='sqlite', expire_after=180)
+
+covid_19_india_url = 'https://api.covid19india.org/data.json'
+dist_data_url = "https://api.covid19india.org/state_district_wise.json"
 
 
 @app.route('/')
 @cross_origin()
 def daily_data():
     try:
-        tracker_data = requests.get('https://api.covid19india.org/data.json')
+        tracker_data = requests.get(covid_19_india_url)
         formatted_tracker_data = tracker_data.json()
+        dist_tracker_data = requests.get(dist_data_url)
+        dist_total_data = dist_tracker_data.json()
         statewise_total_data = []
+        total_world_data = []
+
+        now = time.ctime(int(time.time()))
+        # print("Time: {0} / Used Cache For india dist json data : {1}".format(now, dist_tracker_data.from_cache))
+        # print("Time: {0} / Used Cache For india json data : {1}".format(now, tracker_data.from_cache))
+
 
         for index, data in enumerate(formatted_tracker_data["statewise"]):
             if index != 0:
-                statewise_total_data.append(
-                    dict(id=index, name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
+                statewise_total_data.append(dict(id=index, name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
                          Recovered=data["recovered"], Deaths=data["deaths"], todayconfirmed=data["deltaconfirmed"],
-                         todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"]))
+                         todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"],statecode=data["statecode"]))
 
-        return json.dumps(
-            dict(countries=dict(id="1", name="India", Confirmed=formatted_tracker_data["statewise"][0]["confirmed"],
+        state_with_dist_data = india_district_data(statewise_total_data,dist_total_data)
+        india_data = dict(id="1", name="India", Confirmed=formatted_tracker_data["statewise"][0]["confirmed"],
                                 Recovered=formatted_tracker_data["statewise"][0]["recovered"],
                                 Active=formatted_tracker_data["statewise"][0]["active"],
                                 Deaths=formatted_tracker_data["statewise"][0]["deaths"],
                                 todaytotalconfirmed=formatted_tracker_data["statewise"][0]["deltaconfirmed"],
                                 todaytotaldeaths=formatted_tracker_data["statewise"][0]["deltadeaths"],
                                 todaytotalrecovered=formatted_tracker_data["statewise"][0]["deltarecovered"],
-                                states=statewise_total_data)), indent=4), 200, {'ContentType': 'application/json'}
+                                lastupdatedtime=formatted_tracker_data["statewise"][0]["lastupdatedtime"],
+                                states=state_with_dist_data)
+        total_world_data.append(india_data)
+        collect_world_covid_19_data(total_world_data)
+
+        return json.dumps(total_world_data, indent=4), 200, {'ContentType': 'application/json'}
 
 
-    except Exception:
+    except Exception as e:
+        logging.error("Exception Occured inside daaily_data function",exc_info=True)
         return json.dumps({"Error": "Can not able to process data at this moment", "Error Code": "500"}), 500, {
             'ContentType': 'application/json'}
 
@@ -50,16 +76,28 @@ def get_response_html():
 @app.route('/previousdata', methods=['GET'])
 @cross_origin()
 def get_previous_data():
-    tracker_data = requests.get('https://api.covid19india.org/data.json')
-    formatted_tracker_data = tracker_data.json()["cases_time_series"]
-    dict_with_date = {}
-    for data in formatted_tracker_data:
-        current_date = str(data["date"]).strip()
-        dict_with_date[current_date] = dict(dailyconfirmed=data["dailyconfirmed"], dailydeceased=data["dailydeceased"],
-                                            dailyrecovered=data["dailyrecovered"])
-    return json.dumps(divide_data_into_weeks(dict_with_date)), 200, {'ContentType': 'application/json'}
+    try:
+        tracker_data = requests.get(covid_19_india_url)
+        formatted_tracker_data = tracker_data.json()["cases_time_series"]
+        dict_with_date = {}
+
+        now = time.ctime(int(time.time()))
+        #print("Time: {0} / Used Cache For previous json data : {1}".format(now, tracker_data.from_cache))
+
+        for data in formatted_tracker_data:
+            current_date = str(data["date"]).strip()
+            dict_with_date[current_date] = dict(dailyconfirmed=data["dailyconfirmed"], dailydeceased=data["dailydeceased"],
+                                                dailyrecovered=data["dailyrecovered"])
+        return json.dumps(divide_data_into_weeks(dict_with_date)), 200, {'ContentType': 'application/json'}
+    except Exception:
+        logging.error("Exception Occured inside get_previous_data function", exc_info=True)
+        return json.dumps({"Error": "Can not able to process data at this moment", "Error Code": "500"}), 500, {
+            'ContentType': 'application/json'}
 
 
 
 if __name__ == '__main__':
+    requests_cache.install_cache('covid_cache', backend='sqlite', expire_after=240)
+    requests_cache.clear()
     app.run()
+
