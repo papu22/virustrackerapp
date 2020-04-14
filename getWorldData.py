@@ -8,7 +8,11 @@ import requests
 from datetime import datetime, timedelta
 
 
+
 world_data_json_url = "https://pomber.github.io/covid19/timeseries.json"
+world_state_data_confirmed = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+world_state_data_recovered = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
+world_state_data_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 
 def collect_world_covid_19_data(total_world_data):
     request_data = requests.get(world_data_json_url)
@@ -54,6 +58,22 @@ def india_district_data(state_based_data,dist_total_data):
 
 
 
+def segregate_world_state_data():
+    csv_data_confirmed = pandas.read_csv(world_state_data_confirmed)
+    data = csv_data_confirmed[pandas.notnull(csv_data_confirmed["Province/State"])]
+    print(data)
+    headers = list(data.keys())
+    cur_date = headers[len(headers) - 1]
+    # total_data = dict(country=list(data["Country/Region"]),state=list(data["Province/State"]),confirmed=list(data[cur_date]))
+    # print(total_data)
+
+
+
+
+def isNan(data):
+    return data != data
+
+segregate_world_state_data()
 
 
 # tracker_data = requests.get('https://api.covid19india.org/data.json')
