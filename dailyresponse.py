@@ -1,11 +1,13 @@
 from flask import Flask
 from flask import jsonify
+from flask import request
 import requests
 import json
 from flask_cors import CORS, cross_origin
 from map import map_data
 from flask import Response
 from fetchdatebased import divide_data_into_weeks
+#from fetchdatebased import world_weekly_data
 from getWorldData import collect_world_covid_19_data
 from getWorldData import india_district_data
 import logging
@@ -78,6 +80,7 @@ def get_response_html():
 def get_previous_data():
     try:
         tracker_data = requests.get(covid_19_india_url)
+        sortorder = request.args.get('sortOrder')
         formatted_tracker_data = tracker_data.json()["cases_time_series"]
         dict_with_date = {}
 
@@ -88,7 +91,14 @@ def get_previous_data():
             current_date = str(data["date"]).strip()
             dict_with_date[current_date] = dict(dailyconfirmed=data["dailyconfirmed"], dailydeceased=data["dailydeceased"],
                                                 dailyrecovered=data["dailyrecovered"])
-        return json.dumps(divide_data_into_weeks(dict_with_date)), 200, {'ContentType': 'application/json'}
+        weekly_ind_data = divide_data_into_weeks(dict_with_date,sortorder)
+        
+# =============================================================================
+#         if sortorder == "desc":
+#             world_weekly_data(weekly_ind_data)
+# =============================================================================
+            
+        return json.dumps(weekly_ind_data), 200, {'ContentType': 'application/json'}
     except Exception:
         logging.error("Exception Occured inside get_previous_data function", exc_info=True)
         return json.dumps({"Error": "Can not able to process data at this moment", "Error Code": "500"}), 500, {
@@ -99,5 +109,6 @@ def get_previous_data():
 if __name__ == '__main__':
     requests_cache.install_cache('covid_cache', backend='sqlite', expire_after=240)
     requests_cache.clear()
+    #app.debug = True
     app.run()
 
