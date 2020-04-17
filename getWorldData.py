@@ -6,6 +6,8 @@ import pandas
 import csv
 import requests
 from datetime import datetime, timedelta
+import pytz
+from pytz import timezone
 
 
 
@@ -13,6 +15,7 @@ world_data_json_url = "https://pomber.github.io/covid19/timeseries.json"
 world_state_data_confirmed = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 world_state_data_recovered = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 world_state_data_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+us_daily_data = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/"
 
 def collect_world_covid_19_data(total_world_data):
     request_data = requests.get(world_data_json_url)
@@ -107,17 +110,55 @@ def segregate_world_state_data():
                                Recovered = recovered,
                                todayconfirmed=dt_cnf - prev_conf,todaydeath=dt_dth - prev_dth,
                                todayrecovered = todayrecovered,dists=[]))
-        
+      
+    seggregate_data_dict["US"] = dict(states=[])
+    seggregate_data_dict = get_all_us_state_data(seggregate_data_dict)
     return seggregate_data_dict
             
 
+def get_all_us_state_data(seggregate_data_dict):
+    us_time_zone = timezone('America/New_York')
+    today = datetime.now(us_time_zone)
+    today_data = []
+    last_day_data = []
+    total_state_data = []
+    
+    
+    try:
+        today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=0)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+        last_day_data = pandas.read_csv(us_daily_data+(today - timedelta(days=1)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+        
+    except Exception as e:
+        print("Exception raised: ",e.__traceback__)
+        today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=1)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+        last_day_data = pandas.read_csv(us_daily_data+(today - timedelta(days=2)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+    
+    today_data = today_data.fillna(0)
+    last_day_data = last_day_data.fillna(0)
+    data = zip(list(today_data["Province_State"]),list(today_data["Confirmed"]),list(last_day_data["Confirmed"]),
+                    list(today_data["Recovered"]),list(last_day_data["Recovered"]),list(today_data["Deaths"]),
+                    list(last_day_data["Deaths"]),list(today_data["Active"]),list(last_day_data["Active"]))
+    
+    index = 0
+    
+    for st,tdy_cnf,last_cnf,tdy_rcv,last_rcv,tdy_dth,last_dth,tdy_act,last_act in data:
+        index += 1
+        total_state_data.append(dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
+                                     Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todayconfirmed=round(tdy_cnf-last_cnf),
+                                     todaydeath=round(tdy_dth-last_dth),todayrecovered=round(tdy_rcv-last_rcv)))
+    
+    seggregate_data_dict["US"]["states"] = total_state_data
+    return seggregate_data_dict
+        
+    
+    
 
 
 
 def isNan(data):
     return data != data
 
-#segregate_world_state_data()
+
 
 
 # tracker_data = requests.get('https://api.covid19india.org/data.json')
