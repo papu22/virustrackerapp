@@ -145,7 +145,7 @@ def get_all_us_state_data(seggregate_data_dict):
         index += 1
         total_state_data.append(dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
                                      Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todayconfirmed=round(tdy_cnf-last_cnf),
-                                     todaydeath=round(tdy_dth-last_dth),todayrecovered=round(tdy_rcv-last_rcv)))
+                                     todaydeath=round(tdy_dth-last_dth),todayrecovered=round(tdy_rcv-last_rcv),dists=[]))
     
     seggregate_data_dict["US"]["states"] = total_state_data
     return seggregate_data_dict
