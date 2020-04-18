@@ -12,6 +12,7 @@ from pytz import timezone
 
 
 world_data_json_url = "https://pomber.github.io/covid19/timeseries.json"
+world_updated_data_json_url = "https://corona.lmao.ninja/v2/countries"
 world_state_data_confirmed = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 world_state_data_recovered = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 world_state_data_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
@@ -46,6 +47,29 @@ def collect_world_covid_19_data(total_world_data):
 
 
     return total_world_data
+
+
+
+
+# =============================================================================
+# def collect_world_covid_19_data(total_world_data):
+#     request_data = requests.get(world_updated_data_json_url)
+#     world_countries_data = request_data.json()
+#     last_hour_date_time = (datetime.now() - timedelta(hours=6)).strftime('%d/%m/%Y %H:%M:%S')
+#     world_state_data = segregate_world_state_data()
+#     
+#     for index,country in enumerate(world_countries_data):
+#         if country["name"] != "India":
+#             if country in world_state_data.keys():
+#                 states = world_state_data[country]["states"]
+#             
+#             total_world_data.append(dict(id=index+2,name=country["name"],Confirmed=world_countries_data[country][recent_data]["confirmed"],
+#                                    Recovered=world_countries_data[country][recent_data]["recovered"],Active=active_cases,
+#                                    Deaths=world_countries_data[country][recent_data]["deaths"],todaytotalconfirmed=today_confirmed_cases,
+#                                    todaytotaldeaths=today_deaths,todaytotalrecovered=today_recovered,
+#                                    lastupdatedtime=last_hour_date_time,states=states))
+# =============================================================================
+            
 
 
 

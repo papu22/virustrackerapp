@@ -13,6 +13,7 @@ from getWorldData import india_district_data
 import logging
 import requests_cache
 import time
+from operator import itemgetter
 
 
 
@@ -35,27 +36,32 @@ def daily_data():
         dist_total_data = dist_tracker_data.json()
         statewise_total_data = []
         total_world_data = []
+        india_data = {}
+        
+        formatted_tracker_data = sorted(formatted_tracker_data["statewise"], key=itemgetter("state"))
 
         now = time.ctime(int(time.time()))
         # print("Time: {0} / Used Cache For india dist json data : {1}".format(now, dist_tracker_data.from_cache))
         # print("Time: {0} / Used Cache For india json data : {1}".format(now, tracker_data.from_cache))
 
 
-        for index, data in enumerate(formatted_tracker_data["statewise"]):
-            if index != 0:
+        for index, data in enumerate(formatted_tracker_data):
+            if data["state"] != "Total":
                 statewise_total_data.append(dict(id=index, name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
                          Recovered=data["recovered"], Deaths=data["deaths"], todayconfirmed=data["deltaconfirmed"],
                          todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"],statecode=data["statecode"]))
+            else:
+                india_data = data
 
         state_with_dist_data = india_district_data(statewise_total_data,dist_total_data)
-        india_data = dict(id="1", name="India", Confirmed=formatted_tracker_data["statewise"][0]["confirmed"],
-                                Recovered=formatted_tracker_data["statewise"][0]["recovered"],
-                                Active=formatted_tracker_data["statewise"][0]["active"],
-                                Deaths=formatted_tracker_data["statewise"][0]["deaths"],
-                                todaytotalconfirmed=formatted_tracker_data["statewise"][0]["deltaconfirmed"],
-                                todaytotaldeaths=formatted_tracker_data["statewise"][0]["deltadeaths"],
-                                todaytotalrecovered=formatted_tracker_data["statewise"][0]["deltarecovered"],
-                                lastupdatedtime=formatted_tracker_data["statewise"][0]["lastupdatedtime"],
+        india_data = dict(id="1", name="India", Confirmed=india_data["confirmed"],
+                                Recovered=india_data["recovered"],
+                                Active=india_data["active"],
+                                Deaths=india_data["deaths"],
+                                todaytotalconfirmed=india_data["deltaconfirmed"],
+                                todaytotaldeaths=india_data["deltadeaths"],
+                                todaytotalrecovered=india_data["deltarecovered"],
+                                lastupdatedtime=india_data["lastupdatedtime"],
                                 states=state_with_dist_data)
         total_world_data.append(india_data)
         collect_world_covid_19_data(total_world_data)
@@ -67,13 +73,8 @@ def daily_data():
         logging.error("Exception Occured inside daaily_data function",exc_info=True)
         return json.dumps({"Error": "Can not able to process data at this moment", "Error Code": "500"}), 500, {
             'ContentType': 'application/json'}
+    
 
-
-@app.route('/htmldata', methods=['GET'])
-@cross_origin()
-def get_response_html():
-    data_map = map_data()
-    return Response(data_map, mimetype="text/html")
 
 @app.route('/previousdata', methods=['GET'])
 @cross_origin()
