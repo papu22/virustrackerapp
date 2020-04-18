@@ -38,7 +38,7 @@ def daily_data():
         total_world_data = []
         india_data = {}
         
-        formatted_tracker_data = sorted(formatted_tracker_data["statewise"], key=itemgetter("state"))
+        formatted_tracker_data = sorted(formatted_tracker_data["statewise"], key=itemgetter("state","confirmed"))
 
         now = time.ctime(int(time.time()))
         # print("Time: {0} / Used Cache For india dist json data : {1}".format(now, dist_tracker_data.from_cache))
