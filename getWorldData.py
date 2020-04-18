@@ -8,6 +8,7 @@ import requests
 from datetime import datetime, timedelta
 import pytz
 from pytz import timezone
+from operator import itemgetter
 
 
 
@@ -83,7 +84,8 @@ def india_district_data(state_based_data,dist_total_data):
                                       todayconfirmed=dist_total_data[state["name"]]["districtData"][data]["delta"]["confirmed"]))
 
 
-        state["dists"] = dist_list
+        sorted_dist_list = sorted(dist_list, key=itemgetter("confirmed"))
+        state["dists"] = sorted_dist_list
 
     return state_based_data
 
