@@ -50,11 +50,11 @@ def daily_data():
             if data["state"] != "Total":
                 statewise_total_data.append(dict(id=index, name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
                          Recovered=data["recovered"], Deaths=data["deaths"], todayconfirmed=data["deltaconfirmed"],
-                         todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"],statecode=data["statecode"]))
+                         todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"],statecode=data["statecode"],dists=[]))
             else:
                 india_data = data
 
-        state_with_dist_data = india_district_data(statewise_total_data,dist_total_data)
+        #state_with_dist_data = india_district_data(statewise_total_data,dist_total_data)
         india_data = dict(id="1", name="India", Confirmed=india_data["confirmed"],
                                 Recovered=india_data["recovered"],
                                 Active=india_data["active"],
@@ -63,7 +63,7 @@ def daily_data():
                                 todaytotaldeaths=india_data["deltadeaths"],
                                 todaytotalrecovered=india_data["deltarecovered"],
                                 lastupdatedtime=india_data["lastupdatedtime"],
-                                states=state_with_dist_data)
+                                states=statewise_total_data)
         total_world_data.append(india_data)
         collect_world_covid_19_data(total_world_data)
 
