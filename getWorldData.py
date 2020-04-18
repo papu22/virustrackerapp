@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import pytz
 from pytz import timezone
 from operator import itemgetter
+from firebase import firebase
 
 
 
@@ -185,6 +186,15 @@ def isNan(data):
     return data != data
 
 
+firebase = firebase.FirebaseApplication("https://covid-data-224.firebaseio.com/",None)
+tracker_data = requests.get('https://corona.lmao.ninja/v2/countries')
+data = tracker_data.json()
+total_data = {}
+
+for i in data:
+    total_data[i["country"]] = i["recovered"]
+
+firebase.post('/covid-data-224/data',data)
 
 
 # tracker_data = requests.get('https://api.covid19india.org/data.json')
