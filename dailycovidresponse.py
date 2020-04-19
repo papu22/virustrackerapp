@@ -40,6 +40,7 @@ def daily_data():
     try:
         tracker_data = requests.get(covid_19_india_url)
         formatted_tracker_data = tracker_data.json()
+        tested_data = formatted_tracker_data["tested"]
         dist_tracker_data = requests.get(dist_data_url)
         dist_total_data = dist_tracker_data.json()
         statewise_total_data = []
@@ -77,7 +78,7 @@ def daily_data():
                           todaytotaldeaths=int(india_data["deltadeaths"]),
                           todaytotalrecovered=int(india_data["deltarecovered"]),
                           lastupdatedtime=india_data["lastupdatedtime"],
-                          states=state_with_dist_data)
+                          states=state_with_dist_data,totaltest=tested_data[len(tested_data) - 1]["totalsamplestested"])
         total_world_data.append(india_data)
 
         world_data_coverage = dict(id=2, name="World", Confirmed=[india_data["Confirmed"]],

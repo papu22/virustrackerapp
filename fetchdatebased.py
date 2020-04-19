@@ -58,19 +58,19 @@ def collect_week_in_list(dict_with_date):
 
 
 
-# =============================================================================
+
 # tracker_data = requests.get('https://api.covid19india.org/data.json')
-# formatted_tracker_data = tracker_data.json()["cases_time_series"]
+# formatted_tracker_data = tracker_data.json()
+# tested_data = formatted_tracker_data["tested"]
 # dict_with_date = {}
-# for data in formatted_tracker_data:
-#          current_date=str(data["date"]).strip()
-#          dict_with_date[current_date] = dict(dailyconfirmed=data["dailyconfirmed"],dailydeceased=data["dailydeceased"],dailyrecovered=data["dailyrecovered"])
-# 
+# # for data in formatted_tracker_data:
+# #          current_date=str(data["date"]).strip()
+# #          dict_with_date[current_date] = dict(dailyconfirmed=data["dailyconfirmed"],dailydeceased=data["dailydeceased"],dailyrecovered=data["dailyrecovered"])
+#
 # #print(dict_with_date)
-# val =[]
-# data = divide_data_into_weeks(dict_with_date,val)
+# print(tested_data[len(tested_data) - 1]["totalsamplestested"])
 # #print(data)
-# =============================================================================
+
 
 
 

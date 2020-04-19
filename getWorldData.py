@@ -59,7 +59,7 @@ def collect_world_covid_19_data(total_world_data):
 def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage):
     request_data = requests.get(world_updated_data_json_url)
     world_countries_data = request_data.json()
-    last_hour_date_time = (datetime.now() - timedelta(hours=3)).strftime('%d/%m/%Y %H:%M:%S')
+    last_hour_date_time = (datetime.now() - timedelta(hours=1)).strftime('%d/%m/%Y %H:%M:%S')
     world_state_data = segregate_world_state_data()
     world_recovered_data = json.loads(ref.get())
 
@@ -73,10 +73,10 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
                 states = world_state_data[country["country"]]["states"]
 
             country_data = dict(id=index+3,name=country["country"],Confirmed=country["cases"],
-                                   Recovered=country["recovered"],Active=country["active"],
+                                   Recovered=(country["cases"] - country["active"] - country["deaths"]),Active=country["active"],
                                    Deaths=country["deaths"],todaytotalconfirmed=country["todayCases"],
                                    todaytotaldeaths=country["todayDeaths"],todaytotalrecovered=int(country["recovered"]) - int(world_recovered_data[country["country"]]),
-                                   lastupdatedtime=last_hour_date_time,states=states)
+                                   lastupdatedtime=last_hour_date_time,states=states,totaltest=country["tests"])
             total_world_data.append(country_data)
             world_recovered_data[country["country"]] = country["recovered"]
 
@@ -90,6 +90,7 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
             world_data_coverage["todaytotalrecovered"].append(int(country["recovered"]) - int(world_recovered_data[country["country"]]))
             world_data_coverage["states"].append({key:val for key, val in country_data.items() if key != 'states'})
             world_data_coverage["states"][index]["dists"] = []
+
 
 
     total_world_data.append(find_the_total_count(world_data_coverage))
