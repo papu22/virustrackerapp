@@ -18,6 +18,7 @@ from operator import itemgetter
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -45,6 +46,8 @@ def daily_data():
         total_world_data = []
         india_data = {}
         india_in_world = {}
+
+        last_hour_date_time = (datetime.now() - timedelta(hours=3)).strftime('%d/%m/%Y %H:%M:%S')
 
         # sorted_data = sorted(formatted_tracker_data["statewise"], key = lambda i: int(i['active']))
         formatted_tracker_data = sorted(formatted_tracker_data["statewise"], key=lambda i: int(i['confirmed']),
@@ -83,7 +86,7 @@ def daily_data():
                                    todaytotalconfirmed=[total_world_data[0]["todaytotalconfirmed"]],
                                    todaytotaldeaths=[total_world_data[0]["todaytotaldeaths"]],
                                    todaytotalrecovered=[total_world_data[0]["todaytotalrecovered"]],
-                                   lastupdatedtime="", states=[{key:val for key, val in india_data.items() if key != 'states'}])
+                                   lastupdatedtime=last_hour_date_time, states=[{key:val for key, val in india_data.items() if key != 'states'}])
 
         # collect_world_covid_19_data(total_world_data)
         collect_world_updated_covid_19_data(total_world_data, ref,world_data_coverage)
