@@ -1,1 +1,1 @@
-web: gunicorn dailyresponse:app
+web: gunicorn dailycovidresponse:app
