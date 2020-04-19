@@ -58,8 +58,8 @@ def daily_data():
             if data["state"] != "Total":
                 statewise_total_data.append(
                     dict(id=index, name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
-                         Recovered=data["recovered"], Deaths=data["deaths"], todayconfirmed=data["deltaconfirmed"],
-                         todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"],
+                         Recovered=data["recovered"], Deaths=data["deaths"], todaytotalconfirmed=data["deltaconfirmed"],
+                         todaytotaldeaths=data["deltadeaths"], todaytotalrecovered=data["deltarecovered"],
                          statecode=data["statecode"]))
             else:
                 india_data = data
@@ -81,7 +81,7 @@ def daily_data():
                                    Recovered=[total_world_data[0]["Recovered"]],
                                    Active=[total_world_data[0]["Active"]], Deaths=[total_world_data[0]["Deaths"]],
                                    todaytotalconfirmed=[total_world_data[0]["todaytotalconfirmed"]],
-                                   todaytotaldeaths=[total_world_data[0]["Active"]],
+                                   todaytotaldeaths=[total_world_data[0]["todaytotaldeaths"]],
                                    todaytotalrecovered=[total_world_data[0]["todaytotalrecovered"]],
                                    lastupdatedtime="", states=[{key:val for key, val in india_data.items() if key != 'states'}])
 

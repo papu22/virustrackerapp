@@ -169,15 +169,15 @@ def segregate_world_state_data():
             states.append(dict(id=index,name=st_cnf,Confirmed=dt_cnf,Deaths=dt_dth,
                                Active=dt_cnf - dt_dth - recovered,
                                Recovered = recovered,
-                               todayconfirmed=dt_cnf - prev_conf,todaydeath=dt_dth - prev_dth,
-                               todayrecovered = todayrecovered,dists=[]))
+                               todaytotalconfirmed=dt_cnf - prev_conf,todaytotaldeaths=dt_dth - prev_dth,
+                               todaytotalrecovered = todayrecovered,dists=[]))
             seggregate_data_dict[cont_cnf] = dict(states=states)
         else:
             seggregate_data_dict[cont_cnf]["states"].append(dict(id=index,name=st_cnf,Confirmed=dt_cnf,Deaths=dt_dth,
                                Active=dt_cnf - dt_dth - recovered,
                                Recovered = recovered,
-                               todayconfirmed=dt_cnf - prev_conf,todaydeath=dt_dth - prev_dth,
-                               todayrecovered = todayrecovered,dists=[]))
+                               todaytotalconfirmed=dt_cnf - prev_conf,todaytotaldeaths=dt_dth - prev_dth,
+                               todaytotalrecovered = todayrecovered,dists=[]))
       
     seggregate_data_dict["USA"] = dict(states=[])
     seggregate_data_dict = get_all_us_state_data(seggregate_data_dict)
@@ -213,8 +213,8 @@ def get_all_us_state_data(seggregate_data_dict):
         if cnt == "US":
             index += 1
             total_state_data.append(dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
-                                         Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todayconfirmed=round(tdy_cnf-last_cnf),
-                                         todaydeath=round(tdy_dth-last_dth),todayrecovered=round(tdy_rcv-last_rcv),dists=[]))
+                                         Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todaytotalconfirmed=round(tdy_cnf-last_cnf),
+                                         todaytotaldeaths=round(tdy_dth-last_dth),todaytotalrecovered=round(tdy_rcv-last_rcv),dists=[]))
 
     seggregate_data_dict["USA"]["states"] = total_state_data
     return seggregate_data_dict
