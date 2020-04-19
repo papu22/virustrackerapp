@@ -89,6 +89,8 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
             world_data_coverage["todaytotaldeaths"].append(country["todayDeaths"])
             world_data_coverage["todaytotalrecovered"].append(int(country["recovered"]) - int(world_recovered_data[country["country"]]))
             world_data_coverage["states"].append({key:val for key, val in country_data.items() if key != 'states'})
+            world_data_coverage["states"][index]["dists"] = []
+
 
     total_world_data.append(find_the_total_count(world_data_coverage))
     if(now >= now.replace(hour=1,minute=15) and now <= now.replace(hour=8,minute=15)):
