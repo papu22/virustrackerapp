@@ -82,7 +82,7 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
 
             #Adding up the world data while iterating
             world_data_coverage["Confirmed"].append(country["cases"])
-            world_data_coverage["Recovered"].append(country["recovered"])
+            world_data_coverage["Recovered"].append((country["cases"] - country["active"] - country["deaths"]))
             world_data_coverage["Active"].append(country["active"])
             world_data_coverage["Deaths"].append(country["deaths"])
             world_data_coverage["todaytotalconfirmed"].append(country["todayCases"])
