@@ -4,6 +4,7 @@ from datetime import timedelta
 import requests
 from datetime import datetime
 from pytz import timezone
+import json
 
 world_data_json_url = "https://pomber.github.io/covid19/timeseries.json"
 
@@ -37,14 +38,36 @@ def divide_data_into_weeks(dict_with_date,sortorder):
     return total_week_data
 
 
-# =============================================================================
-# def world_weekly_data(weekly_ind_data):
-#     request_data = requests.get(world_data_json_url)
-#     world_countries_data = request_data.json()
-#     for index,country in enumerate(world_countries_data):
-#         if country != "India":
-#             recent_data_len = len(world_countries_data[country])-1
-# =============================================================================
+def world_weekly_data():
+    request_data = requests.get(world_data_json_url)
+    world_countries_data = request_data.json()
+    world_weekly_data = {}
+    for index,country in enumerate(world_countries_data):
+        if country != "Afghanistan":
+            weekly_dict_data = {}
+            for week in collect_week_in_list(world_countries_data[country]):
+                week_data = []
+                for i in range(0,week):
+                    reversed_list = world_countries_data[country][::-1]
+                    cur_date = datetime.strptime(reversed_list[i]["date"],'%Y-%m-%d')
+                    cur_date = cur_date.strftime("%d %B")
+                    if i != len(world_countries_data[country]) - 1:
+                        week_data.append(dict(dailyconfirmed=reversed_list[i]["confirmed"] - reversed_list[i+1]["confirmed"],
+                                              dailydeceased=reversed_list[i]["deaths"] - reversed_list[i+1]["deaths"],
+                                              dailyrecovered=reversed_list[i]["recovered"] - reversed_list[i+1]["recovered"],
+                                              date=cur_date))
+                    else:
+                        week_data.append(dict(dailyconfirmed=reversed_list[i]["confirmed"],
+                                              dailydeceased=reversed_list[i]["deaths"],
+                                              dailyrecovered=reversed_list[i]["recovered"],
+                                              date=cur_date))
+                        
+                weekly_dict_data[week] = {"dailydata":week_data}
+            
+            world_weekly_data[country] = weekly_dict_data
+            print(json.dumps(world_weekly_data))
+                
+     
 
 
 def collect_week_in_list(dict_with_date):
@@ -57,7 +80,7 @@ def collect_week_in_list(dict_with_date):
 
 
 
-
+world_weekly_data()
 
 # tracker_data = requests.get('https://api.covid19india.org/data.json')
 # formatted_tracker_data = tracker_data.json()
