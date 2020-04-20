@@ -20,7 +20,7 @@ world_updated_data_json_url = "https://corona.lmao.ninja/v2/countries"
 world_state_data_confirmed = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 world_state_data_recovered = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 world_state_data_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
-us_daily_data = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/"
+us_daily_data = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/"
 
 def collect_world_covid_19_data(total_world_data):
     request_data = requests.get(world_data_json_url)
@@ -94,7 +94,7 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
 
 
     total_world_data.append(find_the_total_count(world_data_coverage))
-    if(now >= now.replace(hour=1,minute=15) and now <= now.replace(hour=8,minute=15)):
+    if(now >= now.replace(hour=1,minute=15) and now <= now.replace(hour=9,minute=15)):
         print("Inside if condition")
         ref.delete()
         ref.set(json.dumps(world_recovered_data))
@@ -190,7 +190,7 @@ def get_all_us_state_data(seggregate_data_dict):
     today = datetime.now(us_time_zone)
     today_data = []
     last_day_data = []
-    total_state_data = []
+    total_state_data = {}
 
     try:
         today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=0)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
@@ -204,29 +204,49 @@ def get_all_us_state_data(seggregate_data_dict):
     
     today_data = today_data.fillna(0)
     last_day_data = last_day_data.fillna(0)
-    data = zip(list(today_data["Country_Region"]),list(today_data["Province_State"]),list(today_data["Confirmed"]),list(last_day_data["Confirmed"]),
-                    list(today_data["Recovered"]),list(last_day_data["Recovered"]),list(today_data["Deaths"]),
-                    list(last_day_data["Deaths"]),list(today_data["Active"]),list(last_day_data["Active"]))
+    data = zip(list(today_data["Country_Region"]),list(today_data["Province_State"]),list(last_day_data["Province_State"]),list(today_data["Confirmed"]),
+               list(last_day_data["Confirmed"]),list(today_data["Recovered"]),list(last_day_data["Recovered"]),list(today_data["Deaths"]),
+               list(last_day_data["Deaths"]),list(today_data["Active"]),list(last_day_data["Active"]))
     
     index = 0
     
-    for cnt,st,tdy_cnf,last_cnf,tdy_rcv,last_rcv,tdy_dth,last_dth,tdy_act,last_act in data:
+    for cnt,st,ls_st,tdy_cnf,last_cnf,tdy_rcv,last_rcv,tdy_dth,last_dth,tdy_act,last_act in data:
         if cnt == "US":
-            index += 1
-            total_state_data.append(dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
-                                         Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todaytotalconfirmed=round(tdy_cnf-last_cnf),
-                                         todaytotaldeaths=round(tdy_dth-last_dth),todaytotalrecovered=round(tdy_rcv-last_rcv),dists=[]))
+            if st not in total_state_data.keys():
+                if st == ls_st:
+                    index += 1
+                    total_state_data[st] = dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
+                                                Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todaytotalconfirmed=round(tdy_cnf-last_cnf),
+                                                todaytotaldeaths=round(tdy_dth-last_dth),todaytotalrecovered=round(tdy_rcv-last_rcv),dists=[])
+            else:
+                if st == ls_st:
+                    total_state_data[st]["Confirmed"] = total_state_data[st]["Confirmed"] + tdy_cnf
+                    total_state_data[st]["Active"] = total_state_data[st]["Active"] + tdy_act
+                    total_state_data[st]["Recovered"] = total_state_data[st]["Recovered"] + tdy_rcv
+                    total_state_data[st]["Deaths"] = total_state_data[st]["Deaths"] + tdy_dth
+                    total_state_data[st]["todaytotalconfirmed"] = round(total_state_data[st]["todaytotalconfirmed"] + round(tdy_cnf-last_cnf))
+                    total_state_data[st]["todaytotaldeaths"] = round(total_state_data[st]["todaytotaldeaths"] + round(tdy_dth-last_dth))
+                    total_state_data[st]["todaytotalrecovered"] = round(total_state_data[st]["todaytotalrecovered"] + round(tdy_rcv-last_rcv))
 
-    seggregate_data_dict["USA"]["states"] = total_state_data
+    
+    #print(json.dumps(list(total_state_data.values())))
+    seggregate_data_dict["USA"]["states"] = list(total_state_data.values())
     return seggregate_data_dict
+     
         
     
     
-
-
-
 def isNan(data):
     return data != data
+
+
+
+
+
+
+
+
+#get_all_us_state_data()
 
 # data = dict(a=2,b=4,val=[])
 # print(data.pop("a"))
