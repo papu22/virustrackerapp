@@ -38,15 +38,20 @@ def divide_data_into_weeks(dict_with_date,sortorder):
     return total_week_data
 
 
-def world_weekly_data():
+def world_weekly_data(weekly_ind_data):
     request_data = requests.get(world_data_json_url)
     world_countries_data = request_data.json()
     world_weekly_data = {}
+    world_weekly_data["India"] = weekly_ind_data
     for index,country in enumerate(world_countries_data):
-        if country != "Afghanistan":
+        if country != "India":
             weekly_dict_data = {}
+            index = 0
             for week in collect_week_in_list(world_countries_data[country]):
+                index += 1
                 week_data = []
+                if index > 5:
+                     break
                 for i in range(0,week):
                     reversed_list = world_countries_data[country][::-1]
                     cur_date = datetime.strptime(reversed_list[i]["date"],'%Y-%m-%d')
@@ -61,11 +66,12 @@ def world_weekly_data():
                                               dailydeceased=reversed_list[i]["deaths"],
                                               dailyrecovered=reversed_list[i]["recovered"],
                                               date=cur_date))
-                        
+
+                week_data.reverse()
                 weekly_dict_data[week] = {"dailydata":week_data}
             
             world_weekly_data[country] = weekly_dict_data
-            print(json.dumps(world_weekly_data))
+    return  world_weekly_data
                 
      
 
@@ -80,7 +86,7 @@ def collect_week_in_list(dict_with_date):
 
 
 
-world_weekly_data()
+#world_weekly_data()
 
 # tracker_data = requests.get('https://api.covid19india.org/data.json')
 # formatted_tracker_data = tracker_data.json()

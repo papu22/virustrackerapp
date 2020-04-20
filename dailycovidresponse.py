@@ -7,7 +7,7 @@ from flask_cors import CORS, cross_origin
 from map import map_data
 from flask import Response
 from fetchdatebased import divide_data_into_weeks
-# from fetchdatebased import world_weekly_data
+from fetchdatebased import world_weekly_data
 from getWorldData import collect_world_covid_19_data
 from getWorldData import collect_world_updated_covid_19_data
 from getWorldData import india_district_data
@@ -120,10 +120,10 @@ def get_previous_data():
                                                 dailyrecovered=data["dailyrecovered"])
         weekly_ind_data = divide_data_into_weeks(dict_with_date, sortorder)
 
-        # =============================================================================
-        #         if sortorder == "desc":
-        #             world_weekly_data(weekly_ind_data)
-        # =============================================================================
+
+        if sortorder == "desc":
+            weekly_ind_data = world_weekly_data(weekly_ind_data)
+
 
         return json.dumps(weekly_ind_data), 200, {'ContentType': 'application/json'}
     except Exception:
