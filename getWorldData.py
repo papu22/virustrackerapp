@@ -9,9 +9,7 @@ from datetime import datetime, timedelta
 import pytz
 from pytz import timezone
 from operator import itemgetter
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
+
 
 
 
@@ -21,6 +19,9 @@ world_state_data_confirmed = "https://raw.githubusercontent.com/CSSEGISandData/C
 world_state_data_recovered = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 world_state_data_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 us_daily_data = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/"
+us_state_data_url = "https://covidtracking.com/api/states"
+us_state_daily_data_url = "https://covidtracking.com/api/states/daily"
+us_states = {'AK': 'Alaska', 'AL': 'Alabama', 'AR': 'Arkansas', 'AS': 'American Samoa', 'AZ': 'Arizona', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DC': 'District Of Columbia', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'GU': 'Guam', 'HI': 'Hawaii', 'IA': 'Iowa', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'MA': 'Massachusetts', 'MD': 'Maryland', 'ME': 'Maine', 'MI': 'Michigan', 'MN': 'Minnesota', 'MO': 'Missouri', 'MP': 'Northern Mariana Islands', 'MS': 'Mississippi', 'MT': 'Montana', 'NC': 'North Carolina', 'ND': 'North Dakota', 'NE': 'Nebraska', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NV': 'Nevada', 'NY': 'New York', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'PR': 'Puerto Rico', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VA': 'Virginia', 'VI': 'US Virgin Islands', 'VT': 'Vermont', 'WA': 'Washington', 'WI': 'Wisconsin', 'WV': 'West Virginia', 'WY': 'Wyoming'}
 
 def collect_world_covid_19_data(total_world_data):
     request_data = requests.get(world_data_json_url)
@@ -87,7 +88,7 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
             world_data_coverage["Deaths"].append(country["deaths"])
             world_data_coverage["todaytotalconfirmed"].append(country["todayCases"])
             world_data_coverage["todaytotaldeaths"].append(country["todayDeaths"])
-            world_data_coverage["todaytotalrecovered"].append(int(country["recovered"]) - int(world_recovered_data[country["country"]]))
+            world_data_coverage["todaytotalrecovered"].append(country_data["todaytotalrecovered"])
             world_data_coverage["states"].append({key:val for key, val in country_data.items() if key != 'states'})
             world_data_coverage["states"][index]["dists"] = []
 
@@ -185,55 +186,74 @@ def segregate_world_state_data():
     return seggregate_data_dict
             
 
+# =============================================================================
+# def get_all_us_state_data(seggregate_data_dict):
+#     us_time_zone = timezone('America/New_York')
+#     today = datetime.now(us_time_zone)
+#     today_data = []
+#     last_day_data = []
+#     total_state_data = {}
+# 
+#     try:
+#         today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=0)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+#         last_day_data = pandas.read_csv(us_daily_data+(today - timedelta(days=1)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+#         
+#     except Exception as e:
+#         print("Exception raised: ",e.__traceback__)
+#         today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=1)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+#         last_day_data = pandas.read_csv(us_daily_data+(today - timedelta(days=2)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
+# 
+#     
+#     today_data = today_data.fillna(0)
+#     last_day_data = last_day_data.fillna(0)
+#     data = zip(list(today_data["Country_Region"]),list(today_data["Province_State"]),list(last_day_data["Province_State"]),list(today_data["Confirmed"]),
+#                list(last_day_data["Confirmed"]),list(today_data["Recovered"]),list(last_day_data["Recovered"]),list(today_data["Deaths"]),
+#                list(last_day_data["Deaths"]),list(today_data["Active"]),list(last_day_data["Active"]))
+#     
+#     index = 0
+#     
+#     for cnt,st,ls_st,tdy_cnf,last_cnf,tdy_rcv,last_rcv,tdy_dth,last_dth,tdy_act,last_act in data:
+#         if cnt == "US":
+#             if st not in total_state_data.keys():
+#                 if st == ls_st:
+#                     index += 1
+#                     total_state_data[st] = dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
+#                                                 Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todaytotalconfirmed=round(tdy_cnf-last_cnf),
+#                                                 todaytotaldeaths=round(tdy_dth-last_dth),todaytotalrecovered=round(tdy_rcv-last_rcv),dists=[])
+#             else:
+#                 if st == ls_st:
+#                     total_state_data[st]["Confirmed"] = total_state_data[st]["Confirmed"] + tdy_cnf
+#                     total_state_data[st]["Active"] = total_state_data[st]["Active"] + tdy_act
+#                     total_state_data[st]["Recovered"] = total_state_data[st]["Recovered"] + tdy_rcv
+#                     total_state_data[st]["Deaths"] = total_state_data[st]["Deaths"] + tdy_dth
+#                     total_state_data[st]["todaytotalconfirmed"] = round(total_state_data[st]["todaytotalconfirmed"] + round(tdy_cnf-last_cnf))
+#                     total_state_data[st]["todaytotaldeaths"] = round(total_state_data[st]["todaytotaldeaths"] + round(tdy_dth-last_dth))
+#                     total_state_data[st]["todaytotalrecovered"] = round(total_state_data[st]["todaytotalrecovered"] + round(tdy_rcv-last_rcv))
+# 
+#     
+#     #print(json.dumps(list(total_state_data.values())))
+#     seggregate_data_dict["USA"]["states"] = list(total_state_data.values())
+#     return seggregate_data_dict
+# =============================================================================
+
+
 def get_all_us_state_data(seggregate_data_dict):
-    us_time_zone = timezone('America/New_York')
-    today = datetime.now(us_time_zone)
-    today_data = []
-    last_day_data = []
-    total_state_data = {}
-
-    try:
-        today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=0)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
-        last_day_data = pandas.read_csv(us_daily_data+(today - timedelta(days=1)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
-        
-    except Exception as e:
-        print("Exception raised: ",e.__traceback__)
-        today_data = pandas.read_csv(us_daily_data+(today - timedelta(days=1)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
-        last_day_data = pandas.read_csv(us_daily_data+(today - timedelta(days=2)).strftime("%m-%d-%Y")+".csv").sort_values('Province_State')
-
-    
-    today_data = today_data.fillna(0)
-    last_day_data = last_day_data.fillna(0)
-    data = zip(list(today_data["Country_Region"]),list(today_data["Province_State"]),list(last_day_data["Province_State"]),list(today_data["Confirmed"]),
-               list(last_day_data["Confirmed"]),list(today_data["Recovered"]),list(last_day_data["Recovered"]),list(today_data["Deaths"]),
-               list(last_day_data["Deaths"]),list(today_data["Active"]),list(last_day_data["Active"]))
-    
+    request_data = requests.get(us_state_data_url)
+    request_state_data = request_data.json()
+    request_daily_data = requests.get(us_state_daily_data_url)
+    request_state_daily_data = request_data.json()
+    us_consolidated_data = {}
     index = 0
     
-    for cnt,st,ls_st,tdy_cnf,last_cnf,tdy_rcv,last_rcv,tdy_dth,last_dth,tdy_act,last_act in data:
-        if cnt == "US":
-            if st not in total_state_data.keys():
-                if st == ls_st:
-                    index += 1
-                    total_state_data[st] = dict(id=index,name=st,Confirmed=round(tdy_cnf),Active=round(tdy_act),
-                                                Recovered=round(tdy_rcv),Deaths=round(tdy_dth),todaytotalconfirmed=round(tdy_cnf-last_cnf),
-                                                todaytotaldeaths=round(tdy_dth-last_dth),todaytotalrecovered=round(tdy_rcv-last_rcv),dists=[])
-            else:
-                if st == ls_st:
-                    total_state_data[st]["Confirmed"] = total_state_data[st]["Confirmed"] + tdy_cnf
-                    total_state_data[st]["Active"] = total_state_data[st]["Active"] + tdy_act
-                    total_state_data[st]["Recovered"] = total_state_data[st]["Recovered"] + tdy_rcv
-                    total_state_data[st]["Deaths"] = total_state_data[st]["Deaths"] + tdy_dth
-                    total_state_data[st]["todaytotalconfirmed"] = round(total_state_data[st]["todaytotalconfirmed"] + round(tdy_cnf-last_cnf))
-                    total_state_data[st]["todaytotaldeaths"] = round(total_state_data[st]["todaytotaldeaths"] + round(tdy_dth-last_dth))
-                    total_state_data[st]["todaytotalrecovered"] = round(total_state_data[st]["todaytotalrecovered"] + round(tdy_rcv-last_rcv))
-
-    
-    #print(json.dumps(list(total_state_data.values())))
-    seggregate_data_dict["USA"]["states"] = list(total_state_data.values())
+    for data in request_state_data:
+        index += 1
+        us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
+                                                      Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
+                                                      Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = 0,
+                                                      todaydeath=0,todayrecovered=0)
+    seggregate_data_dict["USA"]["states"] = list(us_consolidated_data.values())
     return seggregate_data_dict
-     
-        
+
     
     
 def isNan(data):
@@ -242,43 +262,8 @@ def isNan(data):
 
 
 
-
-
-
-
+    
+        
 #get_all_us_state_data()
 
-# data = dict(a=2,b=4,val=[])
-# print(data.pop("a"))
-# print(data)
 
-# cred = credentials.Certificate('covid-data-224-firebase-adminsdk-k9mfg-45460159ac.json')
-# firebase_admin.initialize_app(cred, {
-#     'databaseURL': 'https://covid-data-224.firebaseio.com/'
-# })
-# ref = db.reference('/')
-#
-# request_data = requests.get(world_updated_data_json_url)
-# world_countries_data = request_data.json()
-# total_data = {}
-# for i in world_countries_data:
-#     total_data[i["country"]] = i["recovered"]
-# ref.set(json.dumps(total_data))
-
-
-# tracker_data = requests.get('https://api.covid19india.org/data.json')
-# dist_total_data = requests.get("https://api.covid19india.org/state_district_wise.json").json()
-# formatted_tracker_data = tracker_data.json()
-# dict_with_date = {}
-# statewise_total_data = []
-# for index, data in enumerate(formatted_tracker_data["statewise"]):
-#     if index != 0:
-#         statewise_total_data.append(dict(name=data["state"], Confirmed=data["confirmed"], Active=data["active"],
-#                  Recovered=data["recovered"], Deaths=data["deaths"], todayconfirmed=data["deltaconfirmed"],
-#                  todaydeath=data["deltadeaths"], todayrecovered=data["deltarecovered"], statecode=data["statecode"]))
-#
-# india_district_data(statewise_total_data, dist_total_data)
-#
-# print(dict_with_date)
-
-# collect_world_covid_19_data()
