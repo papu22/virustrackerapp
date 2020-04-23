@@ -25,15 +25,15 @@ def divide_data_into_weeks(dict_with_date,sortorder):
                 weeks_data["totaldeceased"].append(int(dict_with_date[previous_day]["dailydeceased"]))
                 weeks_data["totalrecovered"].append(int(dict_with_date[previous_day]["dailyrecovered"]))
                 total_daily_data.append(dict(date=previous_day,
-                                             dailyconfirmed=dict_with_date[previous_day]["dailyconfirmed"],
-                                             dailydeceased=dict_with_date[previous_day]["dailydeceased"],
-                                             dailyrecovered=dict_with_date[previous_day]["dailyrecovered"]))
+                                             dailyconfirmed=int(dict_with_date[previous_day]["dailyconfirmed"]),
+                                             dailydeceased=int(dict_with_date[previous_day]["dailydeceased"]),
+                                             dailyrecovered=int(dict_with_date[previous_day]["dailyrecovered"])))
         
         if sortorder == "desc":
          total_daily_data.reverse()
 
 
-        total_week_data[str(week)] = dict(totalconfirmed=sum(weeks_data["totalconfirmed"]),totaldeceased=sum(weeks_data["totaldeceased"]),
+        total_week_data[week] = dict(totalconfirmed=sum(weeks_data["totalconfirmed"]),totaldeceased=sum(weeks_data["totaldeceased"]),
                                           totalrecovered=sum(weeks_data["totalrecovered"]),dailydata=total_daily_data)
 
 
@@ -44,6 +44,7 @@ def world_weekly_data(weekly_ind_data):
     request_data = requests.get(world_data_json_url)
     world_countries_data = request_data.json()
     world_weekly_data = {}
+    world_collab_data = get_week_data()
     country_name = None
     world_weekly_data["India"] = weekly_ind_data
     for index,country in enumerate(world_countries_data):
@@ -51,7 +52,7 @@ def world_weekly_data(weekly_ind_data):
             country_name = country_list[country]
         else:
             country_name = country
-        if country != "India":
+        if country == "Afghanistan":
             weekly_dict_data = {}
             index = 0
             for week in collect_week_in_list(world_countries_data[country]):
@@ -68,6 +69,13 @@ def world_weekly_data(weekly_ind_data):
                                               dailydeceased=reversed_list[i]["deaths"] - reversed_list[i+1]["deaths"],
                                               dailyrecovered=reversed_list[i]["recovered"] - reversed_list[i+1]["recovered"],
                                               date=cur_date))
+                        if week in world_collab_data.keys() and len(world_collab_data[week]["dailydata"]) == 0:
+                             world_collab_data[week]["dailydata"].append(week_data[0])
+                             #world_collab_data[week]["dailydata"][i]["dailyconfirmed"] = world_collab_data[week]["dailydata"][i]["dailyconfirmed"] + week_data[i]["dailyconfirmed"]
+                        else:
+                            pass
+
+
                     else:
                         week_data.append(dict(dailyconfirmed=reversed_list[i]["confirmed"],
                                               dailydeceased=reversed_list[i]["deaths"],
@@ -76,8 +84,9 @@ def world_weekly_data(weekly_ind_data):
 
                 week_data.reverse()
                 weekly_dict_data[week] = {"dailydata":week_data}
-            
             world_weekly_data[country_name] = weekly_dict_data
+            print(world_collab_data)
+
     return  world_weekly_data
                 
 
@@ -100,6 +109,15 @@ def collect_week_in_list(dict_with_date):
         date_list.append(i*7)
     date_list.append(len(dict_with_date))
     return date_list
+
+
+
+def get_week_data():
+    week_list = [7,14,21,35,42]
+    week_dict = {}
+    for i in week_list:
+        week_dict[i] = dict(dailydata=[])
+    return week_dict
 
 
 
