@@ -253,10 +253,11 @@ def get_all_us_state_data(seggregate_data_dict):
     
     for data in request_state_data:
         index += 1
-        us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
-                                                      Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
-                                                      Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = 0,
-                                                      todaydeath=0,todayrecovered=0,dists=[])
+        if data["state"] in us_states.keys():
+            us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
+                                                          Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
+                                                          Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = 0,
+                                                          todaydeath=0,todayrecovered=0,dists=[])
     seggregate_data_dict["USA"]["states"] = list(us_consolidated_data.values())
     return seggregate_data_dict
 
