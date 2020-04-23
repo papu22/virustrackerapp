@@ -136,50 +136,56 @@ def india_district_data(state_based_data,dist_total_data):
 
 
 def segregate_world_state_data():
-    csv_data_confirmed = pandas.read_csv(world_state_data_confirmed).sort_values('Country/Region')
-    csv_data_recovered = pandas.read_csv(world_state_data_recovered).sort_values('Country/Region')
-    csv_data_death = pandas.read_csv(world_state_data_death).sort_values('Country/Region')
-    
-    data_confirmed = csv_data_confirmed[pandas.notnull(csv_data_confirmed["Province/State"])]
-    data_recover = csv_data_recovered[pandas.notnull(csv_data_recovered["Province/State"])]
-    data_death = csv_data_death[pandas.notnull(csv_data_death["Province/State"])]
-    
-    headers = list(data_confirmed.keys())
-    cur_date = headers[len(headers) - 1]
-    prev_date = headers[len(headers) - 2]
-    
-    formatted_recovery_data_total= dict(zip(list(data_recover["Province/State"]),list(data_recover[cur_date])))
-    formatted_recovery_data_daily = dict(zip(list(data_recover["Province/State"]),list(data_recover[prev_date])))
-    
-    total_data = zip(list(data_confirmed["Country/Region"]),list(data_confirmed["Province/State"]),list(data_confirmed[cur_date]),
-                     list(data_confirmed[prev_date]),list(data_death["Country/Region"]),list(data_death["Province/State"]),
-                     list(data_death[cur_date]),list(data_death[prev_date]))
     
     seggregate_data_dict = {}
-    index = 0
     
-    for cont_cnf,st_cnf,dt_cnf,prev_conf,cont_dth,st_dth,dt_dth,prev_dth in total_data:
-        index += 1
-        states = []
-        recovered = 0
-        todayrecovered = 0
-        if st_cnf in formatted_recovery_data_total.keys():
-                recovered = formatted_recovery_data_total[st_cnf]
-                todayrecovered = formatted_recovery_data_total[st_cnf] - formatted_recovery_data_daily[st_cnf]
-        if cont_cnf not in seggregate_data_dict.keys():
-            
-            states.append(dict(id=index,name=st_cnf,Confirmed=dt_cnf,Deaths=dt_dth,
-                               Active=dt_cnf - dt_dth - recovered,
-                               Recovered = recovered,
-                               todaytotalconfirmed=dt_cnf - prev_conf,todaytotaldeaths=dt_dth - prev_dth,
-                               todaytotalrecovered = todayrecovered,dists=[]))
-            seggregate_data_dict[cont_cnf] = dict(states=states)
-        else:
-            seggregate_data_dict[cont_cnf]["states"].append(dict(id=index,name=st_cnf,Confirmed=dt_cnf,Deaths=dt_dth,
-                               Active=dt_cnf - dt_dth - recovered,
-                               Recovered = recovered,
-                               todaytotalconfirmed=dt_cnf - prev_conf,todaytotaldeaths=dt_dth - prev_dth,
-                               todaytotalrecovered = todayrecovered,dists=[]))
+    try:
+        csv_data_confirmed = pandas.read_csv(world_state_data_confirmed).sort_values('Country/Region')
+        csv_data_recovered = pandas.read_csv(world_state_data_recovered).sort_values('Country/Region')
+        csv_data_death = pandas.read_csv(world_state_data_death).sort_values('Country/Region')
+        
+        data_confirmed = csv_data_confirmed[pandas.notnull(csv_data_confirmed["Province/State"])]
+        data_recover = csv_data_recovered[pandas.notnull(csv_data_recovered["Province/State"])]
+        data_death = csv_data_death[pandas.notnull(csv_data_death["Province/State"])]
+        
+        headers = list(data_confirmed.keys())
+        cur_date = headers[len(headers) - 1]
+        prev_date = headers[len(headers) - 2]
+        
+        formatted_recovery_data_total= dict(zip(list(data_recover["Province/State"]),list(data_recover[cur_date])))
+        formatted_recovery_data_daily = dict(zip(list(data_recover["Province/State"]),list(data_recover[prev_date])))
+        
+        total_data = zip(list(data_confirmed["Country/Region"]),list(data_confirmed["Province/State"]),list(data_confirmed[cur_date]),
+                         list(data_confirmed[prev_date]),list(data_death["Country/Region"]),list(data_death["Province/State"]),
+                         list(data_death[cur_date]),list(data_death[prev_date]))
+        
+        index = 0
+        
+        for cont_cnf,st_cnf,dt_cnf,prev_conf,cont_dth,st_dth,dt_dth,prev_dth in total_data:
+            index += 1
+            states = []
+            recovered = 0
+            todayrecovered = 0
+            if st_cnf in formatted_recovery_data_total.keys():
+                    recovered = formatted_recovery_data_total[st_cnf]
+                    todayrecovered = formatted_recovery_data_total[st_cnf] - formatted_recovery_data_daily[st_cnf]
+            if cont_cnf not in seggregate_data_dict.keys():
+                
+                states.append(dict(id=index,name=st_cnf,Confirmed=dt_cnf,Deaths=dt_dth,
+                                   Active=dt_cnf - dt_dth - recovered,
+                                   Recovered = recovered,
+                                   todaytotalconfirmed=dt_cnf - prev_conf,todaytotaldeaths=dt_dth - prev_dth,
+                                   todaytotalrecovered = todayrecovered,dists=[]))
+                seggregate_data_dict[cont_cnf] = dict(states=states)
+            else:
+                seggregate_data_dict[cont_cnf]["states"].append(dict(id=index,name=st_cnf,Confirmed=dt_cnf,Deaths=dt_dth,
+                                   Active=dt_cnf - dt_dth - recovered,
+                                   Recovered = recovered,
+                                   todaytotalconfirmed=dt_cnf - prev_conf,todaytotaldeaths=dt_dth - prev_dth,
+                                   todaytotalrecovered = todayrecovered,dists=[]))
+                
+    except Exception as e:
+        print("Some error during process of world state data")
       
     seggregate_data_dict["USA"] = dict(states=[])
     seggregate_data_dict = get_all_us_state_data(seggregate_data_dict)
