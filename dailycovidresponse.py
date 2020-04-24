@@ -19,6 +19,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime, timedelta
+from news_twitter import get_today_news
 
 app = Flask(__name__)
 
@@ -130,6 +131,23 @@ def get_previous_data():
         logging.error("Exception Occured inside get_previous_data function", exc_info=True)
         return json.dumps({"Error": "Can not able to process data at this moment", "Error Code": "500"}), 500, {
             'ContentType': 'application/json'}
+    
+    
+    
+    
+@app.route('/news', methods=['GET'])
+@cross_origin()
+def get_news_details():
+    news_data = {}
+    try:
+        news_data = get_today_news()
+        return news_data, 200, {'ContentType': 'application/json'}
+    except Exception as e:
+        return json.dumps({"Error": "Can not able to stream news at this moment", "Error Code": "500"}), 500, {
+            'ContentType': 'application/json'}
+
+
+
 
 
 if __name__ == '__main__':
