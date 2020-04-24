@@ -96,12 +96,18 @@ def world_weekly_data(weekly_ind_data):
             
             world_weekly_data[country_name] = weekly_dict_data
             
-    world_weekly_data["World"] = world_collab_data
+    world_weekly_data["World"] = ordering_world_data(world_collab_data)
         
     return world_weekly_data
                 
 
 
+
+def ordering_world_data(world_collab_data):
+    for key in world_collab_data.keys():
+        world_collab_data[key]["dailydata"].reverse()
+    
+    return world_collab_data
 
 
 
