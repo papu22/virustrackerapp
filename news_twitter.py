@@ -25,7 +25,8 @@ def get_today_news():
     for article in top_headlines["articles"]:
         if cur_date in article["publishedAt"] or prev_date in article["publishedAt"]:
             data_list.append(dict(title=article["title"],description=article["description"],
-                                  urlToImage=article["urlToImage"],url=article["url"]))
+                                  urlToImage=article["urlToImage"],url=article["url"],id=article["source"]["id"],
+                                  name=article["source"]["name"]))
     
     news_data["todaynews"] = data_list
     
