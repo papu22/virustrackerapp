@@ -129,7 +129,7 @@ def get_previous_data():
             
             india_time_zone = timezone('Asia/Kolkata')
             time_now = datetime.now(india_time_zone)
-            future_date_to_set = (datetime.now(india_time_zone) + timedelta(hours=0,minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
+            future_date_to_set = (datetime.now(india_time_zone) + timedelta(hours=4,minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
 
             with open('timeTracker.json','r+') as a,open('time-series.json','r+') as b:
                     future_date = json.loads(a.read())
