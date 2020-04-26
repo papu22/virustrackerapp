@@ -20,6 +20,9 @@ from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime, timedelta
 from news_twitter import get_today_news
+from datetime import datetime
+from pytz import timezone
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -123,7 +126,27 @@ def get_previous_data():
 
 
         if sortorder == "desc":
-            weekly_ind_data = world_weekly_data(weekly_ind_data)
+            
+            india_time_zone = timezone('Asia/Kolkata')
+            time_now = datetime.now(india_time_zone)
+            future_date_to_set = (datetime.now(india_time_zone) + timedelta(hours=0,minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
+
+            with open('timeTracker.json','r+') as a,open('time-series.json','r+') as b:
+                    future_date = json.loads(a.read())
+                    if time_now < india_time_zone.localize(datetime.strptime(future_date["currenttrackingdate"],'%Y-%m-%d %H:%M:%S')):
+                        print("Inside if")  
+                        weekly_ind_data = json.loads(b.read())
+                          
+                    else:
+                        print("Inside Else future date to set :"+future_date_to_set)
+                        b.truncate()
+                        weekly_ind_data = world_weekly_data(weekly_ind_data)
+                        b.write(json.dumps(weekly_ind_data))
+                        a.close()
+                        if a.closed:
+                          with open('timeTracker.json','r+') as track:
+                             track.truncate()
+                             track.write(json.dumps({"currenttrackingdate":future_date_to_set}))
 
 
         return json.dumps(weekly_ind_data), 200, {'ContentType': 'application/json'}
