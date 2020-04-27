@@ -134,7 +134,7 @@ def get_previous_data():
             with open('timeTracker.json','r+') as a,open('time-series.json','r+') as b:
                     future_date = json.loads(a.read())
                     if time_now < india_time_zone.localize(datetime.strptime(future_date["currenttrackingdate"],'%Y-%m-%d %H:%M:%S')):
-                        print("Inside if")  
+                        print("Inside if , for timeseries")  
                         weekly_ind_data = json.loads(b.read())
                           
                     else:
@@ -146,7 +146,9 @@ def get_previous_data():
                         if a.closed:
                           with open('timeTracker.json','r+') as track:
                              track.truncate()
-                             track.write(json.dumps({"currenttrackingdate":future_date_to_set}))
+                             #track.write(json.dumps({"currenttrackingdate":future_date_to_set}))
+                             future_date["currenttrackingdate"] = future_date_to_set
+                             track.write(json.dumps(future_date))
 
 
         return json.dumps(weekly_ind_data), 200, {'ContentType': 'application/json'}
@@ -163,7 +165,27 @@ def get_previous_data():
 def get_news_details():
     news_data = {}
     try:
-        news_data = get_today_news()
+        india_time_zone = timezone('Asia/Kolkata')
+        time_now = datetime.now(india_time_zone)
+        future_date_to_set = (datetime.now(india_time_zone) + timedelta(hours=0,minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+        with open('timeTracker.json','r+') as a,open('news.json','r+') as b:
+                    future_date = json.loads(a.read())
+                    if time_now < india_time_zone.localize(datetime.strptime(future_date["currenttrackingnewsdate"],'%Y-%m-%d %H:%M:%S')):
+                        print("Inside news if , for news")  
+                        news_data = json.loads(b.read())
+                    else:
+                        print("Inside news Else future date to set :"+future_date_to_set)
+                        b.truncate()
+                        news_data = get_today_news()
+                        b.write(json.dumps(news_data))
+                        a.close()
+                        if a.closed:
+                          with open('timeTracker.json','r+') as track:
+                             track.truncate()
+                             #track.write(json.dumps({"currenttrackingdate":future_date_to_set}))
+                             future_date["currenttrackingnewsdate"] = future_date_to_set
+                             track.write(json.dumps(future_date))
+        
         return news_data, 200, {'ContentType': 'application/json'}
     except Exception as e:
         return json.dumps({"Error": "Can not able to stream news at this moment", "Error Code": "500"}), 500, {
