@@ -25,7 +25,8 @@ def get_today_news():
     
     for article in top_headlines["articles"]:
         if cur_date in article["publishedAt"] or prev_date in article["publishedAt"]:
-            data_list.append(dict(title=article["title"],description=article["description"],
+            desc = str(article["description"]).replace("<ol><li>","").replace("</li><li>","")
+            data_list.append(dict(title=article["title"],description=desc,
                                   urlToImage=article["urlToImage"],url=article["url"],id=article["source"]["id"],
                                   name=article["source"]["name"]))
     
@@ -38,17 +39,8 @@ def get_today_news():
 
     
 
-# =============================================================================
-# with open('timeTracker.json','r+') as a,open('time-series.json','r+') as b:
-#     data = json.loads(a.read())
-#     a.close()
-#     if a.closed:
-#         with open('timeTracker.json','r+') as a:
-#             a.truncate()
-#             val = json.dumps(dict(currenttrackingdate="2020-04-26 00:45:13"))
-#             print(val)
-#             a.write(json.dumps(dict(currenttrackingdate="2020-04-26 01:45:13")))
-# =============================================================================
+
+
     
     
 # =============================================================================
