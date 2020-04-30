@@ -244,22 +244,25 @@ def segregate_world_state_data():
 
 
 def get_all_us_state_data(seggregate_data_dict):
-    request_data = requests.get(us_state_data_url)
-    request_state_data = request_data.json()
-    request_daily_data = requests.get(us_state_daily_data_url)
-    request_state_daily_data = request_data.json()
-    us_consolidated_data = {}
-    index = 0
-    
-    for data in request_state_data:
-        index += 1
-        if data["state"] in us_states.keys():
-            us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
-                                                          Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
-                                                          Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = 0,
-                                                          todaydeath=0,todayrecovered=0,dists=[])
-    seggregate_data_dict["USA"]["states"] = list(us_consolidated_data.values())
-    return seggregate_data_dict
+    try:
+        request_data = requests.get(us_state_data_url)
+        request_state_data = request_data.json()
+        request_daily_data = requests.get(us_state_daily_data_url)
+        request_state_daily_data = request_data.json()
+        us_consolidated_data = {}
+        index = 0
+        
+        for data in request_state_data:
+            index += 1
+            if data["state"] in us_states.keys():
+                us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
+                                                              Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
+                                                              Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = 0,
+                                                              todaydeath=0,todayrecovered=0,dists=[])
+        seggregate_data_dict["USA"]["states"] = list(us_consolidated_data.values())
+        return seggregate_data_dict
+    except Exception as e:
+        return seggregate_data_dict
 
     
     
