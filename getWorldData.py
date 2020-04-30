@@ -266,8 +266,8 @@ def get_all_us_state_data(seggregate_data_dict):
                     
                 us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
                                                               Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
-                                                              Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = todayconfirmed,
-                                                              todaydeath=todaydeath,todayrecovered=todayrecovered,dists=[])
+                                                              Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todaytotalconfirmed = todayconfirmed,
+                                                              todaytotaldeaths=todaydeath,todayrecovered=todaytotalrecovered,dists=[])
         seggregate_data_dict["USA"]["states"] = list(us_consolidated_data.values())
         return seggregate_data_dict
     except Exception as e:
