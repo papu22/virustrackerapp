@@ -70,13 +70,15 @@ def collect_world_updated_covid_19_data(total_world_data,ref,world_data_coverage
     for index,country in enumerate(world_countries_data):
         if country["country"] != "India":
             states = []
+            todaytotalrecovered = 0
             if country["country"] in world_state_data.keys():
                 states = world_state_data[country["country"]]["states"]
+                todaytotalrecovered = int(country["recovered"]) - int(world_recovered_data[country["country"]])
 
             country_data = dict(id=index+3,name=country["country"],Confirmed=country["cases"],
                                    Recovered=(country["cases"] - country["active"] - country["deaths"]),Active=country["active"],
                                    Deaths=country["deaths"],todaytotalconfirmed=country["todayCases"],
-                                   todaytotaldeaths=country["todayDeaths"],todaytotalrecovered=int(country["recovered"]) - int(world_recovered_data[country["country"]]),
+                                   todaytotaldeaths=country["todayDeaths"],todaytotalrecovered=todaytotalrecovered,
                                    lastupdatedtime=last_hour_date_time,states=states,totaltest=country["tests"])
             total_world_data.append(country_data)
             world_recovered_data[country["country"]] = country["recovered"]
@@ -264,6 +266,14 @@ def get_all_us_state_data(seggregate_data_dict):
     except Exception as e:
         return seggregate_data_dict
 
+
+
+# =============================================================================
+# def test_csv():
+#     test_data = pandas.read_csv("https://covidtracking.com/api/states.csv")
+#     print(test_data)
+# =============================================================================
+    
     
     
 def isNan(data):
@@ -272,7 +282,7 @@ def isNan(data):
 
 
 
-    
+#test_csv()    
         
 #get_all_us_state_data()
 
