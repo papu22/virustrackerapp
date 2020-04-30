@@ -249,18 +249,25 @@ def get_all_us_state_data(seggregate_data_dict):
     try:
         request_data = requests.get(us_state_data_url)
         request_state_data = request_data.json()
-        request_daily_data = requests.get(us_state_daily_data_url)
-        request_state_daily_data = request_data.json()
+        prev_day_daily_data = get_prev_day_data()
         us_consolidated_data = {}
         index = 0
         
         for data in request_state_data:
             index += 1
+            todayconfirmed = 0
+            todaydeath = 0
+            todayrecovered = 0
             if data["state"] in us_states.keys():
+                if data["state"] in prev_day_daily_data.keys():
+                    todayconfirmed = int(data["positive"] or 0) - int(prev_day_daily_data[data["state"]]["Confirmed"] or 0)
+                    todayrecovered = int(data["recovered"] or 0) - int(prev_day_daily_data[data["state"]]["Recovered"] or 0)
+                    todaydeath = int(data["death"] or 0) - int(prev_day_daily_data[data["state"]]["Deaths"] or 0)
+                    
                 us_consolidated_data[us_states[data["state"]]] = dict(id=index,name=us_states[data["state"]],Confirmed=int(data["positive"] or 0),
                                                               Active=int(data["positive"] or 0) - int(data["recovered"] or 0) - int(data["death"] or 0),
-                                                              Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = 0,
-                                                              todaydeath=0,todayrecovered=0,dists=[])
+                                                              Recovered=int(data["recovered"] or 0),Deaths=int(data["death"] or 0),todayconfirmed = todayconfirmed,
+                                                              todaydeath=todaydeath,todayrecovered=todayrecovered,dists=[])
         seggregate_data_dict["USA"]["states"] = list(us_consolidated_data.values())
         return seggregate_data_dict
     except Exception as e:
@@ -276,9 +283,21 @@ def isNan(data):
 
 
 
+def get_prev_day_data():
+    request_daily_data = requests.get(us_state_daily_data_url)
+    request_state_daily_data = request_daily_data.json()
+    cur_date = datetime.strptime(str(request_state_daily_data[0]["date"]),'%Y%m%d')
+    prev_date = (cur_date - timedelta(days=1)).strftime("%Y%m%d")
+    prev_day_daily_data = {}
+    for data in request_state_daily_data:
+        if data["date"] == int(prev_date):
+            prev_day_daily_data[data["state"]] = dict(Confirmed=int(data["positive"] or 0),Recovered=int(data["recovered"] or 0),
+                                                      Deaths=int(data["death"] or 0))
+    return prev_day_daily_data
 
 
-        
+
+#test()        
 #get_all_us_state_data()
 
 
