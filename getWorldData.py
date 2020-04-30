@@ -26,7 +26,7 @@ us_states = {'AK': 'Alaska', 'AL': 'Alabama', 'AR': 'Arkansas', 'AS': 'American 
 def collect_world_covid_19_data(total_world_data):
     request_data = requests.get(world_data_json_url)
     world_countries_data = request_data.json()
-    last_hour_date_time = (datetime.now() - timedelta(hours=6)).strftime('%d/%m/%Y %H:%M:%S')
+    last_hour_date_time = (datetime.now() - timedelta(hours=1)).strftime('%d/%m/%Y %H:%M:%S')
     world_state_data = segregate_world_state_data()
 
 
