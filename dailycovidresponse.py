@@ -20,6 +20,7 @@ from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime, timedelta
 from news_twitter import get_today_news
+from news_twitter import get_zone_list
 from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timedelta
@@ -192,6 +193,18 @@ def get_news_details():
             'ContentType': 'application/json'}
 
 
+
+
+@app.route('/zones', methods=['GET'])
+@cross_origin()
+def get_zone_details():
+    zone_list = {}
+    try:
+        zone_list = get_zone_list()
+        return zone_list, 200, {'ContentType': 'application/json'}
+    except Exception:
+        return json.dumps({"Error": "Can not able to get the zone data", "Error Code": "500"}), 500, {
+            'ContentType': 'application/json'}
 
 
 

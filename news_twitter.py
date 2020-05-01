@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timedelta
+import pandas
 
 
 
@@ -39,10 +40,20 @@ def get_today_news():
 
     
 
-
+def get_zone_list():
+    zone_data = pandas.read_csv("zone-list.csv")
+    filtered_zip_list = zip(list(zone_data["DIST"]),list(zone_data["STATE"]),list(zone_data["ZONE"]))
+    total_zone_data = {}
+    for dist,state,zone in filtered_zip_list:
+        if state not in total_zone_data.keys():
+            total_zone_data[str(state)] = dict(dists=[dict(dist=str(dist),zone=str(zone))])
+        else:
+            total_zone_data[str(state)]["dists"].append(dict(dist=str(dist),zone=str(zone)))
+    
+    return json.dumps(total_zone_data)
 
     
-    
+#get_zone_list()   
 # =============================================================================
 # data = get_today_news()
 # print(data)
