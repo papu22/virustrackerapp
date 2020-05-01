@@ -53,7 +53,7 @@ def daily_data():
         india_data = {}
         india_in_world = {}
 
-        last_hour_date_time = (datetime.now() - timedelta(hours=3)).strftime('%d/%m/%Y %H:%M:%S')
+        last_hour_date_time = (datetime.now() - timedelta(hours=1)).strftime('%d/%m/%Y %H:%M:%S')
 
         # sorted_data = sorted(formatted_tracker_data["statewise"], key = lambda i: int(i['active']))
         formatted_tracker_data = sorted(formatted_tracker_data["statewise"], key=lambda i: int(i['confirmed']),
