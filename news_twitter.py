@@ -45,15 +45,21 @@ def get_zone_list():
     filtered_zip_list = zip(list(zone_data["DIST"]),list(zone_data["STATE"]),list(zone_data["ZONE"]))
     total_zone_data = {}
     for dist,state,zone in filtered_zip_list:
+        dist = str(dist).strip()
+        state = str(state).strip()
+        zone = str(zone).strip()
         if state not in total_zone_data.keys():
-            total_zone_data[str(state)] = dict(dists=[dict(dist=str(dist),zone=str(zone))])
+            total_zone_data[state] = dict(dists=[dict(dist=dist,zone=zone.split()[0])])
         else:
-            total_zone_data[str(state)]["dists"].append(dict(dist=str(dist),zone=str(zone)))
+            total_zone_data[state]["dists"].append(dict(dist=dist,zone=zone.split()[0]))
     
     return json.dumps(total_zone_data)
 
     
-#get_zone_list()   
+# =============================================================================
+# data = get_zone_list()
+# print(data)   
+# =============================================================================
 # =============================================================================
 # data = get_today_news()
 # print(data)
