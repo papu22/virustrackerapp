@@ -202,10 +202,13 @@ def get_zone_details():
     zone_list = {}
     try:
         zone_list = get_zone_list()
+        print("request person id :"+request.remote_addr)
         return zone_list, 200, {'ContentType': 'application/json'}
     except Exception:
         return json.dumps({"Error": "Can not able to get the zone data", "Error Code": "500"}), 500, {
             'ContentType': 'application/json'}
+
+
 
 
 
