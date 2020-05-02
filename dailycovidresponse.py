@@ -204,11 +204,8 @@ def get_zone_details():
     try:
         zone_list = get_zone_list()
         
-        city = requests.get("https://api.ipdata.co?api-key=9147a74cc0ecad8c9eb37d545d834d8aa513895c2263811c770b611e").json()
-        print("printing city from external api :"+city["city"])
-        
-        print("Printing ip from query param :"+request.args.get('ip'))
-        print("Printing city from query param :"+request.args.get('city'))
+        print("Printing ip from query param :"+str(request.args.get('ip')))
+        print("Printing city from query param :"+str(request.args.get('city')))
         
         return zone_list, 200, {'ContentType': 'application/json'}
     except Exception:
