@@ -24,7 +24,7 @@ from news_twitter import get_zone_list
 from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timedelta
-import geocoder
+
 
 app = Flask(__name__)
 
@@ -203,8 +203,6 @@ def get_zone_details():
     zone_list = {}
     try:
         zone_list = get_zone_list()
-        g = geocoder.ip('me')
-        print("Person's city "+g.city)
         return zone_list, 200, {'ContentType': 'application/json'}
     except Exception:
         return json.dumps({"Error": "Can not able to get the zone data", "Error Code": "500"}), 500, {
