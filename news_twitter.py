@@ -8,6 +8,7 @@ import pandas
 
 
 
+
 newsapi = NewsApiClient(api_key='5f7c3d5bb96845fc9e4a16eed0d89aa4')
 news_sources = 'the-times-of-india,google-news-in,the-hindu,usa-today,the-washington-times,reuters,reddit-r-all,news24,nbc-news,mtv-news-uk,mtv-news,medical-news-today,google-news-uk,google-news,fox-news,cnn,cnbc,bbc-news,al-jazeera-english,abc-news'
 
@@ -55,7 +56,9 @@ def get_zone_list():
     
     return json.dumps(total_zone_data)
 
-    
+
+
+
 # =============================================================================
 # data = get_zone_list()
 # print(data)   

@@ -14,7 +14,9 @@ from getWorldData import india_district_data
 import logging
 import requests_cache
 import time
+from tweepy import OAuthHandler
 from operator import itemgetter
+from tweepy import API
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
@@ -24,6 +26,7 @@ from news_twitter import get_zone_list
 from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timedelta
+from twitter_timeline import get_twitter_timeline_data
 
 
 app = Flask(__name__)
@@ -38,6 +41,17 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://covid-data-224.firebaseio.com/'
 })
 ref = db.reference('/')
+
+
+
+#Twitter authentication code
+def authenticate_twitter_app():
+        auth = OAuthHandler("41s1rT0xqB3UcDeQxX5Lurp9g", "NsDh6edmL2iDtJvqUmLVRaFgqaDZYOnuHDGsYfucCowJOmLuRO")
+        auth.set_access_token("1254156943536435200-XieoSQ7Zcdwrcp3k43ek1z1Vpyz4gv", "BMpBXOUb0mh8DisrK2Xtn9oCidNMJoMsWZsjVAYIDVexP")
+        return auth
+
+auth = authenticate_twitter_app()
+twitter_client = API(auth)
 
 
 @app.route('/')
@@ -213,6 +227,18 @@ def get_zone_details():
             'ContentType': 'application/json'}
 
 
+
+
+@app.route('/twitter_handler', methods=['GET'])
+@cross_origin()
+def get_twitter_timeline_stream():
+    twitter_data = {}
+    try:
+        twitter_data = get_twitter_timeline_data(twitter_client)
+        return twitter_data, 200, {'ContentType': 'application/json'}
+    except Exception:
+        return json.dumps({"Error": "Can not stream the twitter data", "Error Code": "500"}), 500, {
+            'ContentType': 'application/json'}
 
 
 
