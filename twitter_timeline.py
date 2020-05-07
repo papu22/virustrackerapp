@@ -20,7 +20,8 @@ def get_twitter_timeline_data(twitter_client):
                                       profile_background_image_url=tweet.user.profile_background_image_url,
                                       profile_image_url=tweet.user.profile_image_url))
                 total_tweet_data[country] = tweets
-            
+            else:
+                total_tweet_data[country] = []
         
     return json.dumps(total_tweet_data,ensure_ascii=False)
 
