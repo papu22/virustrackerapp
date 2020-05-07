@@ -7,6 +7,7 @@ import json
 import requests
 
 def get_twitter_timeline_data(twitter_client):
+    total_tweet_data = {}
     with open('twitter_channel.json','r+') as a:
         channel_list_with_country = json.loads(a.read())
         for country in channel_list_with_country.keys():
@@ -23,7 +24,4 @@ def get_twitter_timeline_data(twitter_client):
                 total_tweet_data[country] = total_tweet_data["World"]
         
     return json.dumps(total_tweet_data,ensure_ascii=False)
-
-
-
 
