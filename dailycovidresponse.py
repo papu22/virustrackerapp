@@ -27,6 +27,7 @@ from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timedelta
 from twitter_timeline import get_twitter_timeline_data
+from twitter_timeline import get_twitter_timeline_country_wise
 
 
 app = Flask(__name__)
@@ -234,7 +235,11 @@ def get_zone_details():
 def get_twitter_timeline_stream():
     twitter_data = {}
     try:
-        twitter_data = get_twitter_timeline_data(twitter_client)
+        #twitter_data = get_twitter_timeline_data(twitter_client)
+        if request.args.get('country') is not None:
+            twitter_data = get_twitter_timeline_country_wise(twitter_client,request.args.get('country'))
+        else:
+            twitter_data = get_twitter_timeline_country_wise(twitter_client,"World")
         return twitter_data, 200, {'ContentType': 'application/json'}
     except Exception:
         return json.dumps({"Error": "Can not stream the twitter data", "Error Code": "500"}), 500, {
